@@ -2,7 +2,7 @@ library(shiny)
 
 shinyUI(
   pageWithSidebar(
-    headerPanel("Correlation"),
+    headerPanel("TEST Upload & Ouput"),
     
     sidebarPanel(
       selectInput("sep", "Input Type:",
@@ -11,32 +11,41 @@ shinyUI(
                        "Space Separated File" = " ",
                        "Tab Separated File" = "\t")),
       
+      conditionalPanel(("input.sep != ',' && input.sep != 'NULL'"),
+                       radioButtons("decimal", "Decimal Indicator",
+                                    list("Dot (.)" = ".",
+                                         "Comma (,)" = ","),
+                                    selected = "Dot (.)")
+                       ),
+      
+      conditionalPanel("input.sep != 'NULL'",
+                       fileInput("dataset", "Input Data:", 
+                                 accept = c("text/csv", "text/comma-separated-values,text/plain"))
+                       ),
+      
       checkboxInput("advancedFile", "Advanced File Options", FALSE),
       
       conditionalPanel("input.advancedFile == true",
                        
-                       selectInput("header", "Header", 
-                                   list("Header Line Present" = TRUE,
-                                        "No Header" = FALSE),
-                                   selected = "Header"),
+                       tags$hr(),
                        
-                       selectInput("decimal", "Decimal Indicator:",
-                                   list("Dot (.)" = ".",
-                                        "Comma (,)" = ","),
-                                   selected = "Dot (.)"),
+                       checkboxInput("header", strong("Header Line Present"), TRUE),
                        
-                       checkboxGroupInput("var_missing", "Missing Value Indicators:", 
+                       checkboxGroupInput("var_missing", strong("Missing Value Indicators:"), 
                                           list("NA" = "NA", 
                                                "(Blank Space)" = "", 
                                                "?" = "?" , 
                                                "#N/A" = "#N/A"),
-                                          selected = "NA")
+                                          selected = c("NA"))
       ),
       
-      fileInput("inFile", "Input Data:", 
-                accept = c("text/csv", "text/comma-separated-values,text/plain")),
+      tags$hr(),
+      
+      actionButton("goButton", "Reload!"),
       
       tags$hr(),
+      
+      uiOutput("variables"),
       
       checkboxInput("advanced", "Advanced Options"),
       
@@ -70,8 +79,8 @@ shinyUI(
     
     mainPanel(
       tabsetPanel(
-        tabPanel("table", tableOutput("table"))#,
-        # tabPanel("summary", verbatimTextOutput("summary"))
+        tabPanel("Correlation Plot", plotOutput("corr_plot")),
+        tabPanel("Correlation Matrix", tableOutput("correlation"))
       )
     )
   )
